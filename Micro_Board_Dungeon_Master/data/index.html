@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Micro Board Dungeon Master</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+</head>
+<body>
+  <div class="topnav">
+    <h1>Micro Board Dungeon Master <i class="fas fa-cogs"></i></h1>
+  </div>
+  <div class="content">
+    <form action="/" method="POST">
+      <input type="radio" name="Dice" value="None" checked>
+      <label for="dice">None</label>
+      <input type="radio" name="Dice" value="1d4">
+      <label for="1d4">1d4</label>
+      <input type="radio" name="Dice" value="1d6">
+      <label for="1d6">1d6</label>
+      <input type="radio" name="Dice" value="1d8">
+      <label for="1d8">1d8</label>
+      <input type="radio" name="Dice" value="1d20">
+      <label for="1d20">1d20</label><br><br><br>
+      <label for="steps">Add your stats modificateur avantage:</label>
+      <input type="number" name="stats">
+      <input type="submit" value="Roll">
+    </form>
+    <form action="/" method="POST">
+      <input type="radio" id="debugNone" name="direction" value="None" checked>
+      <label for="CW">None</label>
+      <input type="radio" id="CW" name="direction" value="CW">
+      <label for="CW">Clockwise</label>
+      <input type="radio" id="CCW" name="direction" value="CCW">
+      <label for="CW">Counterclockwise</label><br><br><br>
+      <label for="steps">Number of steps:</label>
+      <input type="number" id="steps" name="steps">
+      <button onclick="submitForm()">GO!</button>
+      
+      <p>The DM is <span id="motor-state">wait</span></p>
+      <p><i id="gear" class="fas fa-cog"></i> </p>
+    </form>
+  </div>
+</body>
+<script src="script.js"></script>
+</html>
