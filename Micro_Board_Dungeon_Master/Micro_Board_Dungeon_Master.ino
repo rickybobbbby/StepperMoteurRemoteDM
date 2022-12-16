@@ -31,10 +31,10 @@ Stepper myStepper(stepsPerRevolution, IN1, IN3, IN2, IN4); //set de l'ordre de r
 //const char* ssid = "REPLACE_WITH_YOUR_SSID";
 //const char* password = "REPLACE_WITH_YOUR_PASSWORD";
 
-const char* ssid = "Yannick96"; //pour les teste personnel
-const char* password = "1234yann"; //pour les teste personnel
+//const char* ssid = "Yannick96"; //pour les teste personnel
+//const char* password = "1234yann"; //pour les teste personnel
 
-//const char* ssid = "reseau2"; // pour l'exemple sur le wifi en class
+const char* ssid = "reseau2"; // pour l'exemple sur le wifi en class
 
 // ------- AsyncWebServer object -------
 // Crée un AsyncWebServer objet au port 80
@@ -71,8 +71,8 @@ void initSPIFFS() {
 // initialisation du wifi
 void initWiFi() {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password); //si le wifi a un mot de passe set
-  //WiFi.begin(ssid); //si le wifi n'a pas de mot de passe
+  //WiFi.begin(ssid, password); //si le wifi a un mot de passe set
+  WiFi.begin(ssid); //si le wifi n'a pas de mot de passe
   Serial.print("Connecting to WiFi ..");
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
@@ -84,7 +84,7 @@ void initWiFi() {
 // ------- Notify All Clients -------
 //script utiliser pour envoyer des retour d'information par notre websocket jusqu'au client.
 void notifyClients(String state) { 
-  ws.textAll(state); // a noté que la fonction textAll() provien de la librerie AsyncWebSocket
+  ws.textAll(state); // a noté que la fonction textAll() provien de la librerie AsyncWebServer
 }
 
 // ------- handle WebSocket Message -------
