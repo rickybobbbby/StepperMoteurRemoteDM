@@ -1,6 +1,6 @@
 /*
   Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/stepper-motor-esp32-web-server/
+  Complete project details at https://RandomNerdTutorials.com/stepper-motor-esp32-websocket/
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files.
@@ -16,8 +16,6 @@
 #include "SPIFFS.h"
 #include <Stepper.h>
 
-
-// Stepper Motor Settings
 const int stepsPerRevolution = 2048;  // change this to fit the number of steps per revolution
 #define IN1 19
 #define IN2 18
@@ -25,27 +23,24 @@ const int stepsPerRevolution = 2048;  // change this to fit the number of steps 
 #define IN4 15
 Stepper myStepper(stepsPerRevolution, IN1, IN3, IN2, IN4);
 
+String message = "";
+
 // Replace with your network credentials
 const char* ssid = "Yannick96";
 const char* password = "1234yann";
-
 //const char* ssid = "reseau2";
-
-
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-// Search for parameter in HTTP POST request
-const char* PARAM_INPUT_1 = "direction";
-const char* PARAM_INPUT_2 = "steps";
-
-const char* PARAM_INPUT_3 = "Dice";
+// Create a WebSocket object
+AsyncWebSocket ws("/ws");
 
 //Variables to save values from HTML form
-String direction;
-String Dice;
+String direction ="Start";
 String steps;
+
+String actionType ="None";
 int r;
 String DiceSteps;
 int DiceSection;
@@ -57,13 +52,12 @@ void initSPIFFS() {
   if (!SPIFFS.begin(true)) {
     Serial.println("An error has occurred while mounting SPIFFS");
   }
-  else {
-  Serial.println("SPIFFS mounted successfully");
+  else{
+    Serial.println("SPIFFS mounted successfully");
   }
 }
 
 // Initialize WiFi
-//WiFi.begin(ssid, password);
 void initWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -75,14 +69,64 @@ void initWiFi() {
   Serial.println(WiFi.localIP());
 }
 
+void notifyClients(String state) {
+  ws.textAll(state);
+}
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
+  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+    data[len] = 0;
+    message = (char*)data;
+    steps = message.substring(message.indexOf("Steps")+5, message.indexOf("ActionType"));
+    actionType = message.substring(message.indexOf("ActionType")+10, message.indexOf("Direction"));
+    direction = message.substring(message.indexOf("Direction")+9, message.length());
+    
+    Serial.print("steps");
+    Serial.println(steps);
+    
+    Serial.print("Action Type");
+    Serial.println(actionType);
+    
+    Serial.print("direction");
+    Serial.println(direction);
+    notifyClients(direction);
+    newRequest = true;
+  }
+}
+
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+  switch (type) {
+    case WS_EVT_CONNECT:
+      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      //Notify client of motor current state when it first connects
+      notifyClients(direction);
+      break;
+    case WS_EVT_DISCONNECT:
+      Serial.printf("WebSocket client #%u disconnected\n", client->id());
+      break;
+    case WS_EVT_DATA:
+        handleWebSocketMessage(arg, data, len);
+        break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+     break;
+  }
+}
+
+void initWebSocket() {
+  ws.onEvent(onEvent);
+  server.addHandler(&ws);
+}
+
 void setup() {
   // Serial port for debugging purposes
 
   Serial.begin(115200);
   initWiFi();
+  initWebSocket();
   initSPIFFS();
-  myStepper.setSpeed(5);
-
+  myStepper.setSpeed(12);
 
   // Web Server Root URL
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -91,68 +135,44 @@ void setup() {
   
   server.serveStatic("/", SPIFFS, "/");
 
-  server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
-    int params = request->params();
-    for(int i=0;i<params;i++){
-      AsyncWebParameter* p = request->getParam(i);
-      if(p->isPost()){
-        // HTTP POST input1 value
-        if (p->name() == PARAM_INPUT_1) {
-          direction = p->value().c_str();
-          Serial.print("Direction set to: ");
-          Serial.println(direction);
-        }
-        // HTTP POST input1 value
-        if (p->name() == PARAM_INPUT_3) {
-          Dice = p->value().c_str();
-          Serial.print("Le type de dés rouler est: ");
-          Serial.println(Dice);
-        }
-        // HTTP POST input2 value
-        if (p->name() == PARAM_INPUT_2) {
-          steps = p->value().c_str();
-          Serial.print("Number of steps set to: ");
-          Serial.println(steps);
-          // Write file to save value
-        }
-        newRequest = true;
-        //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-      }
-    }
-    request->send(SPIFFS, "/index.html", "text/html");
-  });
-
   server.begin();
 }
 
+
 void loop() {
   if (newRequest){
-    if (Dice == "1d4"){
+    if (actionType == "1d4"){
       DiceSection = 2048 / 4;
       Serial.print((int)DiceSection);
-      r = rand() % 5;
+      r = rand() % 4;
       Serial.print((int)r);
+      String notifyString = String("Vous avez rouler un ")+(r+1)+ String(" sur 4");
+      notifyClients(notifyString);
       DiceSteps = ((int)DiceSection) * ((int)r);
       myStepper.step(DiceSteps.toInt());
       Serial.print((String)DiceSteps);
       delay(1000);
       myStepper.step(-DiceSteps.toInt());
     }
-    if (Dice == "1d6"){
+    if (actionType == "1d6"){
       DiceSection = 2048 / 6;
       Serial.print((int)DiceSection);
-      r = rand() % 7;
+      r = rand() % 6;
       Serial.print((int)r);
+      String notifyString = String("Vous avez rouler un ")+(r+1)+ String(" sur 6");
+      notifyClients(notifyString);
       DiceSteps = ((int)DiceSection) * ((int)r);
       myStepper.step(DiceSteps.toInt());
       Serial.print((String)DiceSteps);
       delay(1000);
       myStepper.step(-DiceSteps.toInt());
     }
-    if (Dice == "1d8"){
+    if (actionType == "1d8"){
       DiceSection = 2048 / 8;
       Serial.print((int)DiceSection);
-      r = rand() % 9;
+      r = rand() % 8;
+      String notifyString = String("Vous avez rouler un ")+(r+1)+ String(" sur 8");
+      notifyClients(notifyString);
       Serial.print((int)r);
       DiceSteps = ((int)DiceSection) * ((int)r);
       myStepper.step(DiceSteps.toInt());
@@ -160,10 +180,12 @@ void loop() {
       delay(1000);
       myStepper.step(-DiceSteps.toInt());
     }
-    if (Dice == "1d20"){
+    if (actionType == "1d20"){
       DiceSection = 2048 / 20;
       Serial.print((int)DiceSection);
-      r = rand() % 21;
+      r = rand() % 20;
+       String notifyString = String("Vous avez rouler un ")+(r+1)+ String(" sur 20");
+      notifyClients(notifyString);
       Serial.print((int)r);
       DiceSteps = ((int)DiceSection) * ((int)r);
       myStepper.step(DiceSteps.toInt());
@@ -186,5 +208,7 @@ void loop() {
     }
     delay(1000);
     newRequest = false;
+    notifyClients("stop");
   }
+  ws.cleanupClients();
 }

@@ -2,17 +2,17 @@
 <html>
 <head>
   <title>Micro Board Dungeon Master</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" href="style.css">
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous"/>
+</head>
+<body>
 </head>
 <body>
   <div class="topnav">
     <h1>Micro Board Dungeon Master <i class="fas fa-cogs"></i></h1>
   </div>
   <div class="content">
-    <form action="/" method="POST">
+    <form>
       <input type="radio" name="Dice" value="None" checked>
       <label for="dice">None</label>
       <input type="radio" name="Dice" value="1d4">
@@ -23,22 +23,28 @@
       <label for="1d8">1d8</label>
       <input type="radio" name="Dice" value="1d20">
       <label for="1d20">1d20</label><br><br><br>
-      <label for="steps">Add your stats modificateur avantage:</label>
-      <input type="number" name="stats">
-      <input type="submit" value="Roll">
-    </form>
-    <form action="/" method="POST">
-      <input type="radio" id="debugNone" name="direction" value="None" checked>
-      <label for="CW">None</label>
-      <input type="radio" id="CW" name="direction" value="CW">
-      <label for="CW">Clockwise</label>
-      <input type="radio" id="CCW" name="direction" value="CCW">
-      <label for="CW">Counterclockwise</label><br><br><br>
-      <label for="steps">Number of steps:</label>
-      <input type="number" id="steps" name="steps">
-      <button onclick="submitForm()">GO!</button>
+      <label for="steps">Add your stat bonus:</label>
+      <input type="number" id="Bonus" name="stats">
+      <button type="button" onclick="submitForm()">Roll</button>
+      <p><span id="Dice-state">ready to roll</span></p>
+      <p><i id="dice-display" class="fas fa-dice"></i></p>
       
-      <p>The DM is <span id="motor-state">wait</span></p>
+    </form>
+    <form>
+      <input type="checkbox"  id="chk-burger">
+      <div class="DebugOption">
+        <p><span>Debug Menu</span></p>
+        <input type="radio" id="debugNone" name="direction" value="None" checked>
+        <label for="CW">None</label>
+        <input type="radio" id="CW" name="direction" value="CW">
+        <label for="CW">Clockwise</label>
+        <input type="radio" id="CCW" name="direction" value="CCW">
+        <label for="CW">Counterclockwise</label><br><br><br>
+        <label for="steps">Number of steps:</label>
+        <input type="number" id="steps" name="steps">
+        <button type="button" onclick="submitForm()">Try</button>
+      </div>
+      <p><span id="motor-state">waiting for roll</span></p>
       <p><i id="gear" class="fas fa-cog"></i> </p>
     </form>
   </div>
