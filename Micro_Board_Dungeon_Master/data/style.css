@@ -20,6 +20,7 @@ p{
 
 body {
   margin: 0;
+  background-color: #171B2E;
 }
 
 .content {
@@ -39,12 +40,39 @@ input[type=number], select {
 }
 
 form{
-  border-radius: 5px;
-  background-color: #f2f2f2;
+  border-radius: 25px;
+  background-color: #000000;
   padding: 20px;
+  color: white;
+  margin-bottom: 20px;
 }
 
+.DebugOption{
+  border-radius: 25px;
+  overflow: hidden;
+  max-height: 0px;
+  transition: all .25s ease-out;
+  padding : 0 0 0 0;
+}
+#menu{
+  width: 25px;
+  height: 25px;
+}
+
+#chk-burger {
+  width: 25px;
+  height: 25px;
+  background-color: transparent;
+}
+#burger {
+  cursor: pointer;
+}
+#chk-burger:checked ~ .DebugOption {  
+  max-height: 1000px;
+  padding : 15px 0 0 0;    
+}
 button {
+  border-radius: 25px;
   background-color: #034078;
   border: none;
   padding: 14px 20px;
@@ -81,10 +109,13 @@ input[type="radio"]:checked{
 
 #motor-state{
   font-weight: bold;
-  color: red;
 }
 
 #gear{
+  font-size:100px;
+  color:#2d3031cb;
+}
+#dice-display{
   font-size:100px;
   color:#2d3031cb;
 }
